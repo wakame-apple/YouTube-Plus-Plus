@@ -308,7 +308,7 @@
       <div class="sidebar-content">
         <a href="{{ videourls[0] }}" download="{{ video_title }}">ダウンロード</a>
         <a href="javascript:togglePlayer(false);">デフォルトで視聴する</a>
-        <a href="javascript:togglePlayer(true);">埋め込み(nocookie)で視聴する</a>
+        <a href="javascript:togglePlayer(true);">埋め込み(Education)で視聴する</a>
         <a href="javascript:location.replace('/w?v={{ videoid }}')">高画質で視聴する</a>
         <a href="javascript:location.replace('/history')">履歴を閲覧</a>
         <label for="autonextpage">
@@ -331,15 +331,18 @@
         <div class="video-container">
           <!-- 左カラム：動画プレーヤーとその下に動画説明、コメント -->
           <div class="video-left">
-            <div class="video-player-container">
+           <div class="video-player-container">
   <div id="defaultPlayer" class="video-player-wrapper">
     <video id="player" controls playsinline preload="none">
-      {% for videourl in videourls %}
-        <source class="player-source" src="https://www.yotubeeducation.com/embed/{{ videoid }}?autoplay=1&mute=0&controls=1&start=0&origin=https%3A%2F%2Fcreate.kahoot.it&playsinline=1&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&fs=1&cc_load_policy=0&embed_config=%7B%22enc%22%3A%22AXH1ezleFnq-JzgZdwg5EmYEWRTCcKmr1tjxQIwig7McvppZOiu2WP-k1cjx95LWZ390OY_67OwAUP1sFarWl0DuPCbTzsPF5V-p1wE_rKDiadyAqmbBLqbZoet-FpUyFJZvcOT68n4NqTsvP5ei2bpR1eSv7ZT-Mg%3D%3D%22%2C%22hideTitle%22%3Atrue%7D&enablejsapi=1&widgetid=1&forigin=https%3A%2F%2Fcreate.kahoot.it%2Flearner%2Fcb8cb5ae-d835-4c4a-bc2d-9cc78519d646%2Fcourse%2F6fba06e3-1f76-47a8-9a4a-53c53eb86286%2F0&aoriginsup=1&vf=6">
-      {% endfor %}
+      {% if video_info %}
+        <source class="player-source" src="https://www.yotubeeducation.com/embed/{{ video_info.id }}?{{ video_info.params }}">
+      {% else %}
+        <p>動画が見つかりません。</p>
+      {% endif %}
     </video>
     <div id="loader"></div>
   </div>
+
   <div id="embeddedPlayer" class="umev" style="display: none;">
     <iframe width="100%" height="100%" 
             src="https://www.youtube-nocookie.com/embed/{{ videoid }}" 
@@ -352,19 +355,19 @@
 </div>
 
 <script>
-  // 切り替え用の関数
-  function togglePlayer(isEmbedded) {
-    const defaultPlayer = document.getElementById("defaultPlayer");
-    const embeddedPlayer = document.getElementById("embeddedPlayer");
-    if (isEmbedded) {
-      defaultPlayer.style.display = "none";
-      embeddedPlayer.style.display = "block";
-    } else {
-      defaultPlayer.style.display = "block";
-      embeddedPlayer.style.display = "none";
-    }
+function togglePlayer(isEmbedded) {
+  const defaultPlayer = document.getElementById("defaultPlayer");
+  const embeddedPlayer = document.getElementById("embeddedPlayer");
+  if (isEmbedded) {
+    defaultPlayer.style.display = "none";
+    embeddedPlayer.style.display = "block";
+  } else {
+    defaultPlayer.style.display = "block";
+    embeddedPlayer.style.display = "none";
   }
+}
 </script>
+
 
             <!-- 動画の説明 -->
             <div class="video-description" id="descriptionText">
@@ -745,7 +748,7 @@ function toggleFullScreen() {
 						<p><a href="javascript:closeSubTool('embed')">← 戻る</a></p>
 						<h3>再生方法の変更</h3>
 		<p><a href="javascript:location.replace('/watch?v={{ videoid }}')">デフォルトで視聴する</a>
-		<p><a href="javascript:togglePlayer(true);">埋め込み(nocookie)で視聴する</a>
+		<p><a href="javascript:togglePlayer(true);">埋め込み(Education)で視聴する</a>
 		<p><a href="javascript:location.replace('/ww?v={{ videoid }}')">高画質で視聴する</a>
 					</div>
 
