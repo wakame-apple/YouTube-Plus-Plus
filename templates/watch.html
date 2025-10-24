@@ -272,9 +272,7 @@
 #sidebar .sidebar-content > *:last-child {
   border-bottom: none; /* 最後の項目は下線なし */
 }
- audio {
-        display: none;
-    }
+
     </style>
     <!-- Font Awesome（アイコン用） -->
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
@@ -308,7 +306,7 @@
       <div class="sidebar-content">
         <a href="{{ videourls[0] }}" download="{{ video_title }}">ダウンロード</a>
         <a href="javascript:togglePlayer(false);">デフォルトで視聴する</a>
-        <a href="javascript:togglePlayer(true);">埋め込み(Education)で視聴する</a>
+        <a href="javascript:togglePlayer(true);">埋め込み(education)で視聴する</a>
         <a href="javascript:location.replace('/w?v={{ videoid }}')">高画質で視聴する</a>
         <a href="javascript:location.replace('/history')">履歴を閲覧</a>
         <label for="autonextpage">
@@ -331,43 +329,52 @@
         <div class="video-container">
           <!-- 左カラム：動画プレーヤーとその下に動画説明、コメント -->
           <div class="video-left">
-           <div class="video-player-container">
+            <div class="video-player-container">
   <div id="defaultPlayer" class="video-player-wrapper">
     <video id="player" controls playsinline preload="none">
-      {% if video_info %}
-        <source class="player-source" src="https://www.yotubeeducation.com/embed/{{ video_info.id }}?{{ video_info.params }}">
-      {% else %}
-        <p>動画が見つかりません。</p>
-      {% endif %}
+      {% for videourl in videourls %}
+        <source class="player-source" src="{{ videourl }}">
+      {% endfor %}
     </video>
     <div id="loader"></div>
   </div>
-
   <div id="embeddedPlayer" class="umev" style="display: none;">
-    <iframe width="100%" height="100%" 
-            src="https://www.youtube-nocookie.com/embed/{{ videoid }}" 
-            title="video player" frameborder="0" 
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-            referrerpolicy="strict-origin-when-cross-origin" 
-            allowfullscreen>
-    </iframe>
+    <div id="video-container"></div>
+
+	<script>
+	fetch('https://raw.githubusercontent.com/siawaseok3/wakame/master/video_config.json')
+  	.then(response => response.json())
+  	.then(data => {
+      	const iframe = document.createElement('iframe');
+      	iframe.width = "100%";
+      	iframe.height = "100%";
+      	iframe.src = `https://www.youtubeeducation.com/embed/${data.videoid}${data.params}`;
+      	iframe.title = "video player";
+      	iframe.frameBorder = "0";
+      	iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+      	iframe.referrerPolicy = "strict-origin-when-cross-origin";
+      	iframe.allowFullscreen = true;
+      	document.getElementById('video-container').appendChild(iframe);
+  	})
+  	.catch(err => console.error(err));
+	</script>
   </div>
 </div>
 
 <script>
-function togglePlayer(isEmbedded) {
-  const defaultPlayer = document.getElementById("defaultPlayer");
-  const embeddedPlayer = document.getElementById("embeddedPlayer");
-  if (isEmbedded) {
-    defaultPlayer.style.display = "none";
-    embeddedPlayer.style.display = "block";
-  } else {
-    defaultPlayer.style.display = "block";
-    embeddedPlayer.style.display = "none";
+  // 切り替え用の関数
+  function togglePlayer(isEmbedded) {
+    const defaultPlayer = document.getElementById("defaultPlayer");
+    const embeddedPlayer = document.getElementById("embeddedPlayer");
+    if (isEmbedded) {
+      defaultPlayer.style.display = "none";
+      embeddedPlayer.style.display = "block";
+    } else {
+      defaultPlayer.style.display = "block";
+      embeddedPlayer.style.display = "none";
+    }
   }
-}
 </script>
-
 
             <!-- 動画の説明 -->
             <div class="video-description" id="descriptionText">
@@ -458,49 +465,6 @@ function togglePlayer(isEmbedded) {
   overlay.addEventListener("click", closeSidebarFunc);
 </script>
 
-<script>
-	const video = document.getElementById('video');
-        const audio = document.getElementById('audio');
-
-       video.addEventListener('play', () => {
-            audio.play().catch(error => {
-                console.error("オーディオの再生エラー:", error);
-            });
-        });
-
-        video.addEventListener('pause', () => {
-            audio.pause();
-            audio.currentTime = video.currentTime;
-        });
-
-        video.addEventListener('ended', () => {
-            audio.pause();
-            audio.currentTime = 0; 
-        });
-      
-        video.addEventListener('seeked', () => {
-            video.pause();
-            audio.pause();
-            audio.currentTime = video.currentTime;
-            video.play();
-            audio.play();
-        });
-      
-        video.addEventListener('timeupdate', () => {
-            if (Math.abs(video.currentTime - audio.currentTime) > 0.3) {
-                audio.currentTime = video.currentTime;
-            }
-        });
-
-document.getElementById('reloadButton').addEventListener('click', function() {
-    const video = document.getElementById('video');
-    const audio = document.getElementById('audio');
-    
-    video.load();
-    audio.load();
-});		
-</script>
-	  
     <!-- 以降はその他の既存JS -->
     <script>
       const xhr = new XMLHttpRequest();
@@ -569,9 +533,17 @@ document.addEventListener('keydown', function(event) {
             video.pause();
         }
     }
-    if (event.key === 'f' || event.key === 'F') {
+        if (event.key === 'k' || event.key === 'K') {
         event.preventDefault();
-        toggleFullScreen();
+        if (video.paused) {
+            video.play();
+        } else {
+            video.pause();
+        }
+    }
+    if (event.key === 'f' || event.key === 'F') {
+    event.preventDefault();
+    toggleFullScreen();
     }
     if (event.key === 'ArrowRight') {
         video.currentTime += 10;
@@ -719,8 +691,7 @@ function toggleFullScreen() {
 		<h3> ツール一覧 </h3>
 		<p><a href="/">ホーム</a></p>
 		<p><a onclick="location.replace(location.href)">再読み込み</a></p>
-		<p><a href="javascript:openSubTool('server')">画質の変更 →</a></p>
-		<p><a href="javascript:openSubTool('tool')">基本ツール →</a></p>
+    <p><a href="javascript:openSubTool('tool')">基本ツール →</a></p>
 		<p><a href="javascript:openSubTool('embed')">再生方法の変更 →</a></p>
 		<p><a href="javascript:openSubTool('sonota')">その他 →</a></p>
     <label for="autonextpage">自動で次の動画へ<input id="autonextpage" type="checkbox" onchange="changeAutoNextPage(this)"></label><br>
@@ -747,9 +718,9 @@ function toggleFullScreen() {
 					<div id="tool-sub-embed" class="tool-sub">
 						<p><a href="javascript:closeSubTool('embed')">← 戻る</a></p>
 						<h3>再生方法の変更</h3>
-		<p><a href="javascript:location.replace('/watch?v={{ videoid }}')">デフォルトで視聴する</a>
-		<p><a href="javascript:togglePlayer(true);">埋め込み(Education)で視聴する</a>
-		<p><a href="javascript:location.replace('/ww?v={{ videoid }}')">高画質で視聴する</a>
+		<p><a href="javascript:togglePlayer(false);">デフォルトで視聴する</a>
+		<p><a href="javascript:togglePlayer(true);">埋め込み(education)で視聴する</a>
+		<p><a href="javascript:location.replace('/w?v={{ videoid }}')">高画質で視聴する</a>
 					</div>
 
 					<div id="tool-sub-sonota" class="tool-sub">
@@ -765,14 +736,9 @@ function toggleFullScreen() {
 
 					<div id="tool-sub-server" class="tool-sub">
 						<p><a href="javascript:closeSubTool('server')">← 戻る</a></p>
-						<h3>画質を変更</h3>
-						<form class="select" id="api-selector-form">
-                                  <label for="quality-change">画質を変更:</label>
-						<select id="quality-change">
-					{% for s in streamUrls %}
-					<option value="{{ s.url }}" data-resolution="{{ s.resolution }}">{{ s.resolution }}</option>
-					{% endfor %}
-					</select>
+						<h3>サーバー切り替え</h3>
+						<form id="api-selector-form">
+
 					
 					</div>
 	</div><!-- スタイル（CSS） -->
@@ -856,43 +822,6 @@ function toggleFullScreen() {
 			box-shadow: inset #2589d0 0 0 0 2em;
 			color: #fff;
 		}
-
-		/* 基本のセレクトボックスのカスタマイズ */
-.select {
-  background: #cfcedb;
-  height: 60px;
-  width: 250px;
-  border-radius: 5px;
-  position: relative;
-  z-index: 1;
-}
-
-.select::after {
-  position: absolute;
-  content: '';
-  width: 8px;
-  height: 8px;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%) rotate(45deg);
-  border-bottom: 2px solid #fff;
-  border-right: 2px solid #fff;
-  z-index: -1;
-}
-
-select {
-  /* 初期化 */
-  appearance: none;
-  -moz-appearance: none;
-  -webkit-appearance: none;
-  background: none;
-  border: none;
-  color: #333;
-  font-size: 16px;
-  width: 100%;
-  height: 100%;
-  padding: 0 10px;
-}
 	</style><!-- JavaScript -->
 	<script>
 		function openToolPanel() {
@@ -919,32 +848,6 @@ select {
     document.getElementById(`tool-sub-${id}`).style.left = "100%";
   }
 	</script>
-<script>
-		document.getElementById('quality-change').addEventListener('change', function () {
-		    const selectedUrl = this.value;
-		    const video = document.getElementById('video');
-		
-		    // 現在の再生位置を記録
-		    const currentTime = video.currentTime;
-		    const isPlaying = !video.paused;
-		
-		    // <source> を置き換え
-		    video.innerHTML = '';
-		    const newSource = document.createElement('source');
-		    newSource.src = selectedUrl;
-		    newSource.type = 'video/mp4';
-		    video.appendChild(newSource);
-		
-		    // 再読み込みして再生位置を復元
-		    video.load();
-		    video.currentTime = currentTime;
-		
-		    if (isPlaying) {
-		        video.play().catch(err => console.error("再生失敗:", err));
-		    }
-		});
-　　</script>
-	  
 <script src="//accaii.com/yuto110/script.js" async></script><noscript><img src="//accaii.com/yuto110/script?guid=on"></noscript> 
   </body>
 </html>
