@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: youtube-plus-plus
+    name: choco-plus+
     env: python
     region: Oregon
     plan: free
